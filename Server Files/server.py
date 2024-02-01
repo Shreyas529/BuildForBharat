@@ -1,5 +1,14 @@
 import socket
+import threading
+def handle_client(client_socket):
+    # Receive data from the client
+    data = client_socket.recv(1024)
 
+    # Send data back to the client
+    client_socket.sendall(data)
+
+    # Close the connection
+    client_socket.close()
 # Create a socket object
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -8,20 +17,13 @@ server_address = ('', 3389)
 server_socket.bind(server_address)
 
 # Listen for incoming connections
-server_socket.listen(2)
+server_socket.listen(5)
 
 print('Server is listening on {}:{}'.format(*server_address))
 
 while True:
-    # Wait for a connection
-    print('Waiting for a connection...')
     client_socket, client_address = server_socket.accept()
-    print('Accepted connection from {}:{}'.format(*client_address))
 
-    # Receive and send back data
-    data = client_socket.recv(1024)
-    print('Received data: {!r}'.format(data.decode('utf-8')))
-    client_socket.sendall(data)
-    print("Closing")
-    client_socket.close()
-# use thread pooling,caching to make data sending faster and efficient
+    # Handle the client connection in a separate thread
+    threading.Thread(target=handle_client, args=(client_socket,)).start()
+    
