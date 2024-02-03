@@ -2,13 +2,16 @@ import socket
 import threading
 from BplusTree import tree
 from server_operations import ServerOps
+import time
 def handle_client(client_socket,serverOperator:ServerOps):
     # Receive data from the client
     data = client_socket.recv(1024)
     # Send data back to the client
     data=serverOperator.retrieve_merchants(int(data.decode("utf-8")))
-    
+
     client_socket.sendall(data.encode("utf-8"))
+
+   
 
     # Close the connection
     client_socket.close()
