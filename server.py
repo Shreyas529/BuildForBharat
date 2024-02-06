@@ -32,7 +32,7 @@ async def main():
 
     # Start both servers concurrently
     await asyncio.gather(
-        start_server(server1_host, server1_port,"local.db"),
+        start_server(server1_host, server1_port,"merchants.db"),
         start_server(server2_host, server2_port,"local.db")
     )
 
