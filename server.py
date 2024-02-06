@@ -1,35 +1,39 @@
-import socket
-import threading
+import asyncio
 from bplustree import BPlusTree
 from server_operations import ServerOps
-import queue
-import time
-def handle_client(client_socket,filename):
+async def handle_client(reader, writer,filename):
+    data = await reader.read(4096)
+    
+    # Handle client request here
     tree=BPlusTree(f"./TestDB/{filename}")
     serverOperator=ServerOps(tree)
-    # Receive data from the client
-
-    data = client_socket.recv(4096)
-    # Send data back to the client
+   
     data=serverOperator.retrieve_merchants(int(data.decode("utf-8")))
-    client_socket.sendall(data.encode("utf-8"))
+    data=data.encode()
     tree.close()
-    # Close the connection
-    client_socket.close()
-# Create a socket object
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   
+    writer.write(data)
+    await writer.drain()
+    writer.close()
 
-# Bind the socket to a specific address and port
-server_address = ('', 3389)
-server_socket.bind(server_address)
+async def start_server(host, port,filename):
+    server = await asyncio.start_server(lambda r, w: handle_client(r, w, filename), host, port)
+    async with server:
+        print(f'Server started at {host}:{port}')
+        await server.serve_forever()
 
-# Listen for incoming connections
-server_socket.listen(5)
+async def main():
+    # Define your server configurations
+    server1_host = ''
+    server1_port = 3389
 
-print('Server is listening on {}:{}'.format(*server_address))
+    server2_host = ''
+    server2_port = 8080
 
-while True:
-    client_socket, client_address = server_socket.accept()
-    # Handle the client connection in a separate thread
-    threading.Thread(target=handle_client, args=(client_socket,"local.db")).start()
-    
+    # Start both servers concurrently
+    await asyncio.gather(
+        start_server(server1_host, server1_port,"local.db"),
+        start_server(server2_host, server2_port,"local.db")
+    )
+
+asyncio.run(main())
