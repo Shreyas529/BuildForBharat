@@ -1,5 +1,5 @@
 import struct 
-
+from functools import lru_cache
 class ServerOps:
     def __init__(self,tree):
         self.tree=tree
@@ -13,7 +13,7 @@ class ServerOps:
             retrieved_list = retrieved_list + tuple(merchant_id for merchant_id in reversed_merchant_dict[pincode] if merchant_id not in retrieved_list)
             byte_data = struct.pack('!{}I'.format(len(retrieved_list)), *retrieved_list)
             self.tree.insert(pincode,byte_data,replace=True)
-            
+    @lru_cache(maxsize=128)
     def retrieve_merchants(self,pincode:int)->str:
         byte_data=self.tree.get(pincode)
         retrieved_list = struct.unpack('!{}I'.format(len(byte_data)//4),byte_data)
