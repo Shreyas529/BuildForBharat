@@ -10,12 +10,16 @@ class WriteCache:
         self.cache.add(key, value)
         self.size += 1
 
-    def getRecord(self, key):
-        retrievedRecord = self.cache.get(key,None)
-        return retrievedRecord
+    def getRecord_by_pincode(self,pincode):
+        retrieved_tuple = ()
+        for (key, value) in self.iteritems():
+            if (pincode in value):
+                retrieved_tuple += (key,)
+    
+        return retrieved_tuple
     
     def returnAllRecords(self):
-        records = {key: value for key, value in self.cache.iteritems()}
+        records = {key: value for (key, value) in self.iteritems()}
         return records
     
     def clearCache(self):
@@ -26,3 +30,10 @@ class WriteCache:
     
     def setSize(self, size = 0):
         self.size = size
+    
+    def iteritems(self):
+        retrieved_tuple = ()
+        for key in self.cache:
+            retrieved_tuple += ((key, self.cache.get(key)),)
+        
+        return retrieved_tuple
