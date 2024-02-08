@@ -1,11 +1,14 @@
 import struct
 from functools import lru_cache
-
-
+from writeCache import WriteCache
 class ServerOps:
-    def __init__(self, tree):
-        self.tree = tree
+    def __init__(self,tree):
+        self.tree=tree
+        self.cache = WriteCache()
 
+    def curr_length(self):
+        return self.cache.getSize()
+    
     def add_merchants(self, merchants: dict) -> None:
 
         reversed_merchant_dict = {pincode: merchant_id for merchant_id,
@@ -23,6 +26,18 @@ class ServerOps:
                                  for merchant_id in merchants)
             self.tree.insert(pincode, byte_data, replace=True)
 
+    def add_merchant_to_cache(self,merchants:dict):
+        for i in merchants.items:
+            self.cache.addRecord(i.key,i.value)
+
+    def move_to_cache(self):
+        records = self.cache.returnAllRecords()
+        self.add_merchants(records)
+    
+    def retrieve_from_cache(self,pincode):
+        retrieved_tuple = self.cache.getRecord_by_pincode(pincode)
+        return retrieved_tuple
+    
 
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:
