@@ -2,15 +2,13 @@ import struct
 from functools import lru_cache
 from writeCache import WriteCache
 class ServerOps:
-    def __init__(self,tree):
+    def __init__(self,tree,cache):
         self.tree=tree
-        self.cache = WriteCache()
+        self.cache = cache
 
     def curr_length(self):
         return self.cache.getSize()
 
-    def curr_length(self):
-        return self.cache.getSize()
     
     def add_merchants(self, merchants: dict) -> None:
 
@@ -37,10 +35,7 @@ class ServerOps:
     def move_to_cache(self):
         records = self.cache.returnAllRecords()
         self.add_merchants(records)
-    
-    def retrieve_from_cache(self,pincode):
-        retrieved_tuple = self.cache.getRecord_by_pincode(pincode)
-        return retrieved_tuple
+        self.cache.clearCache()
     
     def retrieve_from_cache(self,pincode):
         retrieved_tuple = self.cache.getRecord_by_pincode(pincode)
@@ -51,8 +46,9 @@ class ServerOps:
     def retrieve_merchants(self, pincode: int) -> str:
         byte_data = self.tree.get(pincode)
         if byte_data is None:
-            return "Not found"
+            return None,0
         num_merchants = len(byte_data) // 36
         merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
-
-        return "\n".join([str(j) for j in merchants])
+        merchants = [s[i:i+36].decode() for s in merchants for i in range(0, len(s), 36)]
+        
+        return "\n".join([str(j) for j in merchants]),len(merchants)
