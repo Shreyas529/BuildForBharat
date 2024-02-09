@@ -16,6 +16,7 @@ def decode_merchant_data(byte_data:bytes) -> dict:
             raise ValueError("Invalid pincode: {}".format(code))
 
     data_dict = {merchant_id : pincodes}
+    return data_dict
     
 async def handle_client(reader, writer,filename):
     data = await reader.read(4096)
