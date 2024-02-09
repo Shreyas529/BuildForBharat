@@ -37,9 +37,3 @@ class WriteCache:
             retrieved_tuple += ((key, self.cache.get(key)),)
         
         return retrieved_tuple
-
-# cache = WriteCache()
-# cache.addRecord(1,3)
-# cache.addRecord(2,10)
-
-# cache.iteritems()
