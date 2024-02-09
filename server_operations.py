@@ -41,6 +41,30 @@ class ServerOps:
         retrieved_tuple = self.cache.getRecord_by_pincode(pincode)
         return retrieved_tuple
     
+    def remove_merchants_from_pincode(self , pincode:int, removal_merchant_id) -> None:
+        byte_data = self.tree.get(pincode)
+        if byte_data is None:
+            return
+        num_merchants = len(byte_data) // 36
+        merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
+        
+        try:
+            error_list=[]
+            for merchant_id  in removal_merchant_id:
+                if merchant_id not in merchants:
+                    error_list.append(merchant_id)
+                    # raise ValueError(f'Merchant ID {merchant_id} does not serve the Pincode {pincode}.')
+            
+            if(len(error_list) >=1):
+                error_message = f'Merchant ID {merchant_id} does not serve the Pincode/Pincodes {", ".join(str(e) for e in error_list)}'
+                raise ValueError(error_message)
+            
+            retrieved_list = tuple(merchant_id for merchant_id in merchants if merchant_id not in removal_merchant_id)
+            byte_data = b''.join(merchant_id.encode()
+                                    for merchant_id in retrieved_list)
+            self.tree.insert(pincode, byte_data, replace=True)
+        except ValueError as e:
+            print(e)
 
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:
