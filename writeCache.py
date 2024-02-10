@@ -12,11 +12,8 @@ class WriteCache:
 
     def getRecord_by_pincode(self,pincode):
         retrieved_tuple = ()
-        for (key, value) in self.iteritems():
-            if (pincode in value):
-                retrieved_tuple += (key,)
-    
-        return retrieved_tuple
+        return self.cache.get(pincode)
+        
     
     def returnAllRecords(self):
         records = {key: value for (key, value) in self.iteritems()}
@@ -37,3 +34,5 @@ class WriteCache:
             retrieved_tuple += ((key, self.cache.get(key)),)
         
         return retrieved_tuple
+    def deleteKey(self,key):
+        self.cache.delete(key)

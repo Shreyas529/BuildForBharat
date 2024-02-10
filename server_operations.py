@@ -29,8 +29,8 @@ class ServerOps:
 
 
     def add_merchant_to_cache(self,merchants:dict):
-        for i in merchants.items:
-            self.cache.addRecord(i.key,i.value)
+        for i in merchants.items():
+            self.cache.addRecord(i[0],i[1])
 
     def move_to_cache(self):
         records = self.cache.returnAllRecords()
@@ -42,6 +42,15 @@ class ServerOps:
         return retrieved_tuple
     
     def remove_merchants_from_pincode(self , pincode:int, removal_merchant_id) -> None:
+        cached_data=self.cache.getRecord_by_pincode(pincode)
+        if cached_data:
+            cached_data=list(cached_data)
+            while merchant_id in cached_data:
+                cached_data.remove(merchant_id)
+            self.cache.deleteKey(pincode)
+            self.cache.addRecord(tuple(cached_data))
+            return            
+            
         byte_data = self.tree.get(pincode)
         if byte_data is None:
             return
@@ -68,11 +77,13 @@ class ServerOps:
 
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:
+        cached_data=self.retrieve_from_cache(pincode)
+       
         byte_data = self.tree.get(pincode)
         if byte_data is None:
             return None,0
         num_merchants = len(byte_data) // 36
         merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
         merchants = [s[i:i+36].decode() for s in merchants for i in range(0, len(s), 36)]
-        
+        merchants=merchants+list(cached_data)
         return "\n".join([str(j) for j in merchants]),len(merchants)

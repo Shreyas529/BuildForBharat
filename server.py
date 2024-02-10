@@ -4,8 +4,7 @@ from bplustree import BPlusTree
 from server_operations import ServerOps
 import os
 from writeCache import WriteCache
-import uuid
-
+from update_query import generate_merchant_ids
 # def decode_merchant_data(byte_data:bytes) -> dict:
 #     string_data = byte_data.decode('utf-8')
 #     parts = string_data.strip().split()
@@ -20,14 +19,6 @@ import uuid
 #     data_dict = {merchant_id : pincodes}
 #     return data_dict
 
-def generate_merchant_ids(pincode: int,merchant_dict:dict) -> dict: #To generate  unique merchant for each pincode if the number of merchants serving the pincode is not given.
-    merchant_ids = set()
-    for i in range(0,random.randint(10,100)):
-        uuid_string = str(uuid.uui4())
-        merchant_ids.add(uuid_string)
-
-    merchant_dict[pincode] = tuple(merchant_ids)
-    return merchant_dict
     
 async def handle_client(reader, writer):
     
@@ -60,11 +51,17 @@ async def handle_client(reader, writer):
     
 async def handle_superUser(reader,writer):
     
-    byte_data=await reader.read(4096)
+    writer.write(b"Enter pincode")
+    await writer.drain()
+    pincode=await reader.read(4096)
+    writer.write(b"Enter number of merchants you want to add")
+    await writer.drain()
+    no_of_merchants=await reader.read(4096)
+
     
 
     try:
-        merchants_dict = generate_merchant_ids(byte_data)#if the byte data is pincode and you want to add merchant id's to the pincode
+        merchants_dict = generate_merchant_ids(int(pincode.decode()),int(no_of_merchants.decode()),{})#if the byte data is pincode and you want to add merchant id's to the pincode
         #merchants_dict = decode_merchant_data(byte_data) if the byte data contains input of the format 'id pincode_1 pincode_2 ...'
         filename="merchants.db"
         tree=BPlusTree(f"./TestDB/{filename}") 
