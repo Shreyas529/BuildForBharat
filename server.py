@@ -1,24 +1,33 @@
 import asyncio
-
+import random
 from bplustree import BPlusTree
 from server_operations import ServerOps
 import os
 from writeCache import WriteCache
 import uuid
 
-def decode_merchant_data(byte_data:bytes) -> dict:
-    string_data = byte_data.decode('utf-8')
-    parts = string_data.strip().split()
-    merchant_id = parts[0]
-    pincodes = []
-    for code in parts[1:]:
-        if code.isdigit() and 100000<=int(code)<=999999:
-            pincodes.append(int(code))
-        else:
-            raise ValueError("Invalid pincode: {}".format(code))
+# def decode_merchant_data(byte_data:bytes) -> dict:
+#     string_data = byte_data.decode('utf-8')
+#     parts = string_data.strip().split()
+#     merchant_id = parts[0]
+#     pincodes = []
+#     for code in parts[1:]:
+#         if code.isdigit() and 100000<=int(code)<=999999:
+#             pincodes.append(int(code))
+#         else:
+#             raise ValueError("Invalid pincode: {}".format(code))
 
-    data_dict = {merchant_id : pincodes}
-    return data_dict
+#     data_dict = {merchant_id : pincodes}
+#     return data_dict
+
+def generate_merchant_ids(pincode: int,merchant_dict:dict) -> dict: #To generate  unique merchant for each pincode if the number of merchants serving the pincode is not given.
+    merchant_ids = set()
+    for i in range(0,random.randint(10,100)):
+        uuid_string = str(uuid.uui4())
+        merchant_ids.add(uuid_string)
+
+    merchant_dict[pincode] = tuple(merchant_ids)
+    return merchant_dict
     
 async def handle_client(reader, writer):
     
@@ -55,7 +64,8 @@ async def handle_superUser(reader,writer):
     
 
     try:
-        merchants_dict = decode_merchant_data(byte_data)
+        merchants_dict = generate_merchant_ids(byte_data)#if the byte data is pincode and you want to add merchant id's to the pincode
+        #merchants_dict = decode_merchant_data(byte_data) if the byte data contains input of the format 'id pincode_1 pincode_2 ...'
         filename="merchants.db"
         tree=BPlusTree(f"./TestDB/{filename}") 
         serverOperator=ServerOps(tree,cache)
