@@ -32,11 +32,11 @@ class ServerOps:
 
     def add_merchant_to_cache(self,merchants:dict):
         for i in merchants.items():
-            self.cache.addRecord(i[0],i[1])
             if (self.tree.get(i[0]) == None):
                 return 0
-            else:
-                return 1
+            self.cache.addRecord(i[0],i[1])
+        else:
+            return 1
 
     def move_to_cache(self):
         records = self.cache.returnAllRecords()
