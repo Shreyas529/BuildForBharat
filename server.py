@@ -164,8 +164,7 @@ async def handle_superUser(reader,writer):
         except:
             data="Could not add data\n"
 
-        else:
-            data="Not a Valid Option, Try Again \n"
+        
         
                 
     data=data.encode()
