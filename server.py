@@ -36,7 +36,7 @@ async def handle_client(reader, writer):
         tree.close()
 
         if data is not None:
-            data=f"<Found existing pincode {int(pincode.decode('utf-8'))} with {recordCount} merchants>\n"+data
+            data=f"<Found existing pincode {int(pincode.decode('utf-8'))} with {recordCount} merchants>\n"+data+"\n"
         else:
             data=f"<No merchants found for pincode:{int(pincode.decode('utf-8'))}>"
     except ValueError as e:
@@ -49,38 +49,32 @@ async def handle_client(reader, writer):
     writer.write(data)
     await writer.drain()
     end=time.time()
-    writer.write(f"\n(Time taken by the request:{end-start} seconds".encode())
+    writer.write(f"(Time taken by the request:{end-start} seconds)\n".encode())
     writer.close()
     
 async def handle_superUser(reader,writer):
-    
-    writer.write(b"Enter pincode")
-    await writer.drain()
-    pincode=await reader.read(4096)
-    writer.write(b"Enter number of merchants you want to add")
-    await writer.drain()
-    no_of_merchants=await reader.read(4096)
 
+    pincode,no_of_merchants=(await reader.read(4096)).decode().strip().split()
     
-
     try:
-        merchants_dict = generate_merchant_ids(int(pincode.decode()),int(no_of_merchants.decode()),{})#if the byte data is pincode and you want to add merchant id's to the pincode
+        merchants_dict = generate_merchant_ids(int(pincode),int(no_of_merchants),{})#if the byte data is pincode and you want to add merchant id's to the pincode
         #merchants_dict = decode_merchant_data(byte_data) if the byte data contains input of the format 'id pincode_1 pincode_2 ...'
         filename="merchants.db"
         tree=BPlusTree(f"./TestDB/{filename}") 
         serverOperator=ServerOps(tree,cache)
         serverOperator.add_merchant_to_cache(merchants_dict)
+      
         tree.close()
-        if(serverOperator.curr_length()==128):
+        if(serverOperator.curr_length()>=1):
             r=os.fork() # creates a new process
-            if(r==0):
-                serverOperator.tree=BPlusTree(f"./TestDB/{filename}") 
-                serverOperator.move_to_cache()
-                serverOperator.tree.close()
-                exit(0)
-            else:
+            try:
+                if(r==0):
+                    serverOperator.tree=BPlusTree(f"./TestDB/{filename}") 
+                    serverOperator.move_to_cache()
+                    serverOperator.tree.close()
+                    os._exit(0)
+            except:
                 pass
-                
         data="Added Successfully"
     except ValueError as e:
         data=e+" : Pincode should be 6 digits" # Decode the received dict from bytes to string and then to dictionary

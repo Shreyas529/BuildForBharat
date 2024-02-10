@@ -10,22 +10,23 @@ class ServerOps:
         return self.cache.getSize()
 
     
-    def add_merchants(self, merchants: dict) -> None:
+    def add_merchants(self, merchants_dict: dict) -> None:
 
-        reversed_merchant_dict = {pincode: merchant_id for merchant_id,
-                                  pincodes in merchants.items() for pincode in pincodes}
-        for pincode in reversed_merchant_dict.keys():
+    
+        for pincode in merchants_dict.keys():
             byte_data = self.tree.get(pincode)
             if(byte_data is None):
                 return 
             num_merchants = len(byte_data) // 36
             merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
-            retrieved_list = retrieved_list + \
+            merchants = merchants + \
                 tuple(
-                    merchant_id for merchant_id in reversed_merchant_dict[pincode] if merchant_id not in retrieved_list)
-            byte_data = b''.join(merchant_id.encode()
-                                 for merchant_id in merchants)
+                    merchant_id for merchant_id in merchants_dict[pincode] if merchant_id not in merchants)
+            
+            byte_data = b''.join([ merchant_id.encode() if type(merchant_id)==str  else merchant_id
+                                 for merchant_id in merchants ] )
             self.tree.insert(pincode, byte_data, replace=True)
+            
 
 
     def add_merchant_to_cache(self,merchants:dict):
@@ -34,7 +35,9 @@ class ServerOps:
 
     def move_to_cache(self):
         records = self.cache.returnAllRecords()
+       
         self.add_merchants(records)
+        
         self.cache.clearCache()
     
     def retrieve_from_cache(self,pincode):
@@ -82,7 +85,8 @@ class ServerOps:
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:
         cached_data=self.retrieve_from_cache(pincode)
-       
+        if cached_data is None:
+            cached_data=()
         byte_data = self.tree.get(pincode)
         if byte_data is None:
             return None,0

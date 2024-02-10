@@ -4,11 +4,16 @@ import struct
 class WriteCache:
     def __init__(self):
         self.cache = diskcache.Cache("cache")
-        self.size = 0
+        self.size = len(self.cache)
 
     def addRecord(self, key, value):
-        self.cache.add(key, value)
-        self.size += 1
+        getVal=self.cache.get(key)
+        if getVal:
+            self.cache.set(key,getVal+value)
+        else:
+            self.cache.set(key,value)
+            self.size += 1
+        
 
     def getRecord_by_pincode(self,pincode):
         retrieved_tuple = ()
