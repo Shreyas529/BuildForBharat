@@ -12,7 +12,7 @@ class ServerOps:
     
     def add_merchants(self, merchants_dict: dict) -> None:
 
-    
+        
         for pincode in merchants_dict.keys():
             byte_data = self.tree.get(pincode)
             if(byte_data is None):
@@ -31,6 +31,7 @@ class ServerOps:
 
 
     def add_merchant_to_cache(self,merchants:dict):
+        print(merchants)
         for i in merchants.items():
             self.cache.addRecord(i[0],i[1])
 
@@ -83,6 +84,7 @@ class ServerOps:
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:
         cached_data=self.retrieve_from_cache(pincode)
+        
         if cached_data is None:
             cached_data=()
         byte_data = self.tree.get(pincode)

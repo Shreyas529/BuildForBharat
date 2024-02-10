@@ -67,7 +67,7 @@ async def handle_superUser(reader,writer):
             serverOperator=ServerOps(tree,cache)
             serverOperator.add_merchant_to_cache(merchants_dict)
             tree.close()
-            if(serverOperator.curr_length()>=128):
+            if(serverOperator.curr_length()>=500):
                 r=os.fork() # creates a new process
                 try:
                     if(r==0):
@@ -81,7 +81,7 @@ async def handle_superUser(reader,writer):
         except ValueError as e:
             data=e+" : Pincode should be 6 digits\n"
 
-    elif inp[0] == "2":
+    elif inp[0] == "3":
                         
         
         pincode, *merchant_ids = inp[1:]
@@ -91,11 +91,37 @@ async def handle_superUser(reader,writer):
         serverOperator=ServerOps(tree,cache)
         try:
             serverOperator.remove_merchants_from_pincode(int(pincode), merchant_ids)
-            print(merchant_ids)
+          
             data = f'Merchants removed from Pincode {pincode}\n'
         except ValueError as e:
             data=e.__str__()
         serverOperator.tree.close()
+    elif inp[0]=="2":
+        merchant_id,*pincodes=inp[1:]
+        filename="merchants.db"
+        tree=BPlusTree(f"./TestDB/{filename}") 
+        serverOperator=ServerOps(tree,cache)
+        merchants={int(pincode):(merchant_id,) for pincode in pincodes}
+        serverOperator.add_merchant_to_cache(merchants)
+        tree.close()
+        try:
+            if(serverOperator.curr_length()>=500):
+                r=os.fork() # creates a new process
+                try:
+                    if(r==0):
+                        serverOperator.tree=BPlusTree(f"./TestDB/{filename}") 
+                        serverOperator.move_to_cache()
+                        serverOperator.tree.close()
+                        os._exit(0)
+                except:
+                    pass
+            data="Added Successfully\n"
+        except:
+            data="Could not add data"
+            
+
+
+
     else:
         data="Not valid Option\n"
     data=data.encode()
