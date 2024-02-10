@@ -43,7 +43,7 @@ class ServerOps:
     
     def remove_merchants_from_pincode(self , pincode:int, removal_merchant_id) -> None:
         cached_data=self.cache.getRecord_by_pincode(pincode)
-        if cached_data:
+        if merchant_id in cached_data:
             cached_data=list(cached_data)
             while merchant_id in cached_data:
                 cached_data.remove(merchant_id)

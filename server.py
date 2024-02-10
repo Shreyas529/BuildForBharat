@@ -1,5 +1,5 @@
 import asyncio
-import random
+import time
 from bplustree import BPlusTree
 from server_operations import ServerOps
 import os
@@ -24,6 +24,7 @@ async def handle_client(reader, writer):
     
     pincode = await reader.read(4096)
     # print(pincode.decode())
+    start=time.time()
     try:
         if(999999<int(pincode.decode()) or 100000>int(pincode.decode())):
             data=""
@@ -44,9 +45,11 @@ async def handle_client(reader, writer):
     
 
     data=data.encode()
-   
+    
     writer.write(data)
     await writer.drain()
+    end=time.time()
+    writer.write(f"\n(Time taken by the request:{end-start} seconds".encode())
     writer.close()
     
 async def handle_superUser(reader,writer):
