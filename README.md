@@ -25,7 +25,7 @@ For other features:
     ADD_NEW_MERCHANT <merchant_id> <pincode1 pincode2 ...>
 
     #Add merchants to an existing pincode
-    ADD_MERCHANTS <pincode> <merchant_id1 merchant_id2 ...>
+    ADD_MERCHANTS <pincode> <number of merchants>
 
     #Removing a merchant
     REMOVE_MERCHANT <pincode> <merchant_id1 merchant_id2 ...>
@@ -46,7 +46,8 @@ For other features:
 
 2. **Merchant Management Features**: Integrated features for adding and removing merchants within the system, ensuring flexibility and adaptability to changing business needs and serviceability requirements.
 
-3. **Caching mchanisms**:
+3. **Caching mechanisms**:
+   
     3.1 _Retrieval Cache_: Employed an in-memory cache to store frequently accessed data, optimizing retrieval speed and reducing latency for commonly requested information.
 
     3.2 *Internal Cache*: Utilized a larger in-memory cache to accommodate less frequently accessed data, enhancing overall system performance by reducing the need for disk access.
