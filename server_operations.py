@@ -19,11 +19,12 @@ class ServerOps:
                 return 
             num_merchants = len(byte_data) // 36
             merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
+            merchants = [s[i:i+36].decode() for s in merchants for i in range(0, len(s), 36)]
             merchants = merchants + \
                 tuple(
                     merchant_id for merchant_id in merchants_dict[pincode] if merchant_id not in merchants)
             
-            byte_data = b''.join([ merchant_id.encode() if type(merchant_id)==str  else merchant_id
+            byte_data = b''.join([ merchant_id.encode() 
                                  for merchant_id in merchants ] )
             self.tree.insert(pincode, byte_data, replace=True)
             
@@ -63,24 +64,21 @@ class ServerOps:
             return
         num_merchants = len(byte_data) // 36
         merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
+        merchants = [s[i:i+36].decode() for s in merchants for i in range(0, len(s), 36)]
+       
         
-        try:
-            error_list=[]
-            for merchant_id  in removal_merchant_id:
-                if merchant_id not in merchants:
-                    error_list.append(merchant_id)
-                    # raise ValueError(f'Merchant ID {merchant_id} does not serve the Pincode {pincode}.')
+        for merchant_id  in removal_merchant_id:
+            if merchant_id not in merchants:
+                raise ValueError(f"Merchant ID {merchant_id} does not serve the Pincode {pincode}\n")
+                
+                # raise ValueError(f'Merchant ID {merchant_id} does not serve the Pincode {pincode}.')
             
-            if(len(error_list) >=1):
-                error_message = f'Merchant ID {merchant_id} does not serve the Pincode/Pincodes {", ".join(str(e) for e in error_list)}'
-                raise ValueError(error_message)
             
-            retrieved_list = tuple(merchant_id for merchant_id in merchants if merchant_id not in removal_merchant_id)
-            byte_data = b''.join(merchant_id.encode()
-                                    for merchant_id in retrieved_list)
-            self.tree.insert(pincode, byte_data, replace=True)
-        except ValueError as e:
-            print(e)
+        retrieved_list = tuple(merchant_id for merchant_id in merchants if merchant_id not in removal_merchant_id)
+        byte_data = b''.join(merchant_id.encode()
+                            for merchant_id in retrieved_list)
+        self.tree.insert(pincode, byte_data, replace=True)
+        
 
     @lru_cache(maxsize=128)
     def retrieve_merchants(self, pincode: int) -> str:

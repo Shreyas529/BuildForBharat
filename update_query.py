@@ -14,9 +14,9 @@ def generate_merchant_ids(pincode: int) -> dict: #To generate  unique merchant f
 def generate_merchant_ids(pincode: int,no_of_merchants:int,merchant_dict:dict) -> None: #To generate unique merchant for each pincode give how many merchants serve the pincode 
     merchant_ids = set()
     for i in range(0,no_of_merchants):
-        uuid_string = str(uuid.uui4())
+        uuid_string = str(uuid.uuid4())
         merchant_ids.add(uuid_string)
 
-#     merchant_dict[pincode] = tuple(merchant_ids)
-#     return merchant_dict
+    merchant_dict[pincode] = tuple(merchant_ids)
+    return merchant_dict
 
