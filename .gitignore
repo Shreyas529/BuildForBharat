@@ -1,3 +1,5 @@
 *.db
 /__pycache__
 /cache
+/2023-12*
+/.~lock*
