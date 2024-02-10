@@ -44,7 +44,7 @@ class ServerOps:
         retrieved_tuple = self.cache.getRecord_by_pincode(pincode)
         return retrieved_tuple
     
-    def remove_merchants_from_pincode(self , pincode:int, removal_merchant_id) -> None:
+    def remove_merchants_from_pincode(self , pincode:int, removal_merchant_id:list) -> None:
         cached_data=self.cache.getRecord_by_pincode(pincode)
         if cached_data:
             cached_data=list(cached_data)
