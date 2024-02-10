@@ -23,10 +23,11 @@ def decode_merchant_data(byte_data:bytes) -> dict:
 async def handle_client(reader, writer):
     
     pincode = await reader.read(4096)
+    # print(pincode.decode())
     try:
-        if(int(pincode.decode()) not in [100000,999999]):
+        if(999999<int(pincode.decode()) or 100000>int(pincode.decode())):
             data=""
-            raise ValueError
+            raise ValueError("Incorrect value")
         filename="merchants.db"
         tree=BPlusTree(f"./TestDB/{filename}") 
         serverOperator=ServerOps(tree,cache)
@@ -38,6 +39,7 @@ async def handle_client(reader, writer):
         else:
             data=f"<No merchants found for pincode:{int(pincode.decode('utf-8'))}>"
     except ValueError as e:
+        
         data="Pincodes must be a 6 digit number"
     
 
