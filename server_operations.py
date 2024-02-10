@@ -32,11 +32,11 @@ class ServerOps:
 
     def add_merchant_to_cache(self,merchants:dict):
         for i in merchants.items():
+            self.cache.addRecord(i[0],i[1])
             if (self.tree.get(i[0]) == None):
                 return 0
-            self.cache.addRecord(i[0],i[1])
-        else:
-            return 1
+            else:
+                return 1
 
     def move_to_cache(self):
         records = self.cache.returnAllRecords()
@@ -59,7 +59,7 @@ class ServerOps:
                     cached_data.remove(merchant_id)
                     count+=1
             self.cache.deleteKey(pincode)
-            self.cache.addRecord(tuple(cached_data))
+            self.cache.addRecord(pincode,tuple(cached_data))
             if(count==len(removal_merchant_id)):
                 return            
             
