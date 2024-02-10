@@ -4,7 +4,7 @@ from bplustree import BPlusTree
 from server_operations import ServerOps
 import os
 from writeCache import WriteCache
-import uuid
+from update_query import generate_merchant_ids
 
 # def decode_merchant_data(byte_data:bytes) -> dict:
 #     string_data = byte_data.decode('utf-8')
@@ -19,15 +19,6 @@ import uuid
 
 #     data_dict = {merchant_id : pincodes}
 #     return data_dict
-
-def generate_merchant_ids(pincode: int,merchant_dict:dict) -> dict: #To generate  unique merchant for each pincode if the number of merchants serving the pincode is not given.
-    merchant_ids = set()
-    for i in range(0,random.randint(10,100)):
-        uuid_string = str(uuid.uui4())
-        merchant_ids.add(uuid_string)
-
-    merchant_dict[pincode] = tuple(merchant_ids)
-    return merchant_dict
     
 async def handle_client(reader, writer):
     
@@ -58,35 +49,74 @@ async def handle_client(reader, writer):
     
 async def handle_superUser(reader,writer):
     
-    byte_data=await reader.read(4096)
+    menu = "Enter 1 for addition of merchants\nEnter 2 for removal of merchants\n"
+    writer.write(menu.encode())
+    await writer.drain()
     
+    choice = await reader.read(4096)
+    choice = choice.decode().strip()
+    
+    filename="merchants.db"
+    tree=BPlusTree(f"./TestDB/{filename}") 
+    serveroperator = ServerOps(tree , cache)
 
     try:
-        merchants_dict = generate_merchant_ids(byte_data)#if the byte data is pincode and you want to add merchant id's to the pincode
-        #merchants_dict = decode_merchant_data(byte_data) if the byte data contains input of the format 'id pincode_1 pincode_2 ...'
-        filename="merchants.db"
-        tree=BPlusTree(f"./TestDB/{filename}") 
-        serverOperator=ServerOps(tree,cache)
-        serverOperator.add_merchant_to_cache(merchants_dict)
+        if choice == "1":
+            response = "Option 1 selected: Addition of merchants:\n"
+            writer.write(response.encode())
+            await writer.drain()
+            
+            response = "Enter the pincode for merchants to be added\n"
+            writer.write(response.encode())
+            await writer.drain()
+            
+            byte_data=await reader.read(4096)
+            byte_data = byte_data.decode().strip()
+            merchant_dict = generate_merchant_ids(byte_data)
+            serveroperator.add_merchant_to_cache(merchant_dict)
+            if(serveroperator.curr_length()==128):
+                r=os.fork() # creates a new process
+                if(r==0):
+                    serveroperator.tree=BPlusTree(f"./TestDB/{filename}") 
+                    serveroperator.move_to_cache()
+                    serveroperator.tree.close()
+                    exit(0)
+                else:
+                    pass
+        
+        elif choice == "2":
+            
+            response = "Option 2 selected: Removal of merchants\nPlease enter the PINCODE first followed by merchant id's to be removed from that pincode:\n"
+            writer.write(response.encode())
+            await writer.drain()
+            
+            removal_input = await reader.read(4096)
+            removal_input = removal_input.decode().strip()
+            pincode, *merchant_ids = removal_input.split()
+            merchant_ids = list(merchant_ids)
+            serveroperator.remove_merchants_from_pincode(int(pincode), merchant_ids)
+            response = f'Merchants removed from Pincode {pincode}\n'
+        
+        else:
+            
+            response = "Invalid  Option. Please enter again.\n"
+            writer.write(response.encode())
+            await writer.drain()
+            
+    except Exception as e:
+        response = f"Error: {str(e)}\n"
+        writer.write(response.encode())
+        await writer.drain()
+    
+    finally:
+        # Close the connection.
         tree.close()
-        if(serverOperator.curr_length()==128):
-            r=os.fork() # creates a new process
-            if(r==0):
-                serverOperator.tree=BPlusTree(f"./TestDB/{filename}") 
-                serverOperator.move_to_cache()
-                serverOperator.tree.close()
-                exit(0)
-            else:
-                pass
-                
-        data="Added Successfully"
-    except ValueError as e:
-        data=e+" : Pincode should be 6 digits" # Decode the received dict from bytes to string and then to dictionary
+        writer.close()
 
-    data=data.encode()
-    writer.write(data)
-    await writer.drain()
-    writer.close()
+    # data=data.encode()
+    # writer.write(data)
+    # await writer.drain()
+    # writer.close()
 
 async def start_server1(host, port):
     server = await asyncio.start_server(lambda r, w: handle_client(r, w), host, port)
