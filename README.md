@@ -15,7 +15,7 @@
 To retrieve the list of merchants associated with a particular pincode:
 
     nc 34.125.204.13 3389
-    <pincode>
+    GET_MERCHANT <pincode>
 
 For other features:
 
