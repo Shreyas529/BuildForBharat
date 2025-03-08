@@ -1,4 +1,7 @@
 *.db
-/__pycache__
-/cache
+__pycache__
+cache
 myvenv
+*.csv
+.env
+pincodes.txt

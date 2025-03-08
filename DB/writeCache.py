@@ -3,7 +3,7 @@ import struct
 
 class WriteCache:
     def __init__(self):
-        self.cache = diskcache.Cache("cache")
+        self.cache = diskcache.Cache("../cache")
         self.size = len(self.cache)
 
     def addRecord(self, key, value):

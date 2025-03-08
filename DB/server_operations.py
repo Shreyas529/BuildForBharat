@@ -1,6 +1,5 @@
 import struct
 from functools import lru_cache
-from writeCache import WriteCache
 
 class ServerOps:
     def __init__(self,tree,cache):
@@ -83,7 +82,7 @@ class ServerOps:
         self.tree.insert(pincode, byte_data, replace=True)
         
 
-    @lru_cache(maxsize=128)
+    @lru_cache(maxsize=256)
     def retrieve_merchants(self, pincode: int) -> str:
         cached_data=self.retrieve_from_cache(pincode)
         if cached_data is None:

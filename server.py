@@ -1,9 +1,9 @@
 import asyncio
 import time
 from bplustree import BPlusTree
-from server_operations import ServerOps
-from writeCache import WriteCache
-from update_query import generate_merchant_ids
+from DB.server_operations import ServerOps
+from DB.writeCache import WriteCache
+from DB.update_query import generate_merchant_ids
     
 async def handle_client(reader, writer):
 
