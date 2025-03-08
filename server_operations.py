@@ -1,6 +1,7 @@
 import struct
 from functools import lru_cache
 from writeCache import WriteCache
+
 class ServerOps:
     def __init__(self,tree,cache):
         self.tree=tree
@@ -8,7 +9,6 @@ class ServerOps:
 
     def curr_length(self):
         return self.cache.getSize()
-
     
     def add_merchants(self, merchants_dict: dict) -> None:
 
@@ -70,7 +70,6 @@ class ServerOps:
         merchants = struct.unpack(f'!{num_merchants * 36}s', byte_data)
         merchants = [s[i:i+36].decode() for s in merchants for i in range(0, len(s), 36)]
 
-        print(merchants)
         
         for merchant_id  in removal_merchant_id:
             if merchant_id not in merchants:
