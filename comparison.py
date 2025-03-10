@@ -33,6 +33,7 @@ def compare_retrieval_time():
     pincodes=list(map(int,pincodes))
 
     start1=time.time()
+    
     for i in pincodes:
         query=f"SELECT merchant_id FROM PINCODE_MERCHANT WHERE pincode='{i}'"
         get_pincode_psql(query)

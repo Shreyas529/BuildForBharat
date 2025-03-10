@@ -2,7 +2,7 @@ from bplustree import BPlusTree
 import random
 
 def retrieval_testcases():
-    tree=BPlusTree("../TestDB/merchants.db",order=50)
+    tree=BPlusTree("./TestDB/merchants.db",order=50)
     L=[]
     L1=[]
 
@@ -12,7 +12,7 @@ def retrieval_testcases():
             if(j==10000):
                 break
             if(len(L1)==256):
-                L.extend(random.sample(L1,40))
+                L.extend(random.sample(L1,10))
                 L1=[]
             L.append(key)
             L1.append(key)
